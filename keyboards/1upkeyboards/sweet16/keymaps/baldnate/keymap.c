@@ -1,9 +1,15 @@
-#include "sweet16.h"
+#include QMK_KEYBOARD_H
+
+#define BRIGHTNESS 75
+#define NUMPAD_BLUE 169
+#define OBS_PURPLE 185
+#define EMOTE_RED 0
+#define LAYER_EFFECT RGBLIGHT_MODE_BREATHING
 
 enum layers {
- numpad,
- emote,
- obs
+ LAYER_NUMPAD,
+ LAYER_EMOTE,
+ LAYER_OBS
 };
 
 enum custom_keycodes {
@@ -16,25 +22,24 @@ enum custom_keycodes {
 };
 
 const uint16_t PROGMEM keymaps[][4][4] = {
-  [numpad] = LAYOUT_ortho_4x4(
+  [LAYER_NUMPAD] = LAYOUT_ortho_4x4(
     KC_7_NUMPAD,    KC_8_OBSPAD,    KC_9_EMOTEPAD,    KC_DIV_RESET,
     KC_KP_4,        KC_KP_5,        KC_KP_6,          KC_KP_ASTERISK,
     KC_KP_1,        KC_KP_2,        KC_KP_3,          KC_KP_MINUS,
     KC_KP_0,        KC_KP_DOT,      KC_KP_ENTER,      KC_KP_PLUS
   ),
-  [emote] = LAYOUT_ortho_4x4(
+  [LAYER_EMOTE] = LAYOUT_ortho_4x4(
     KC_HOLD_NUMPAD, KC_HOLD_OBSPAD, KC_NO,            KC_HOLD_RESET,
     KC_CONCERN,     KC_TREVINO,     KC_TOOHIGH,       KC_BOLOHMM,
     KC_PRIDEPOG,    KC_HAHADOGE,    KC_TSTORMS,       KC_MIX,
     KC_GOODLUCK,    KC_HAHASWEAT,   KC_CCTV,          KC_DBSTYLE
   ),
-  [obs] = LAYOUT_ortho_4x4(
+  [LAYER_OBS] = LAYOUT_ortho_4x4(
     KC_F9_NUMPAD,   HYPR(KC_F10),   KC_F11_EMOTEPAD,  KC_F12_RESET,
     HYPR(KC_F13),   HYPR(KC_F14),   HYPR(KC_F15),     HYPR(KC_F16),
     HYPR(KC_F17),   HYPR(KC_F18),   HYPR(KC_F19),     HYPR(KC_F20),
     HYPR(KC_F21),   HYPR(KC_F22),   HYPR(KC_F23),     HYPR(KC_F24)
   ),
-
 };
 
 const uint16_t hold_time = 500;
@@ -51,14 +56,34 @@ void process_reset_hold(uint16_t keycode, keyrecord_t *record) {
   }
 }
 
+void switch_to_layer(uint8_t layer) {
+  switch (layer) {
+    case LAYER_NUMPAD:
+      rgblight_mode_noeeprom(LAYER_EFFECT);
+      rgblight_sethsv_noeeprom(NUMPAD_BLUE, 255, BRIGHTNESS);
+      break;
+    case LAYER_EMOTE:
+      rgblight_mode_noeeprom(LAYER_EFFECT);
+      rgblight_sethsv_noeeprom(EMOTE_RED, 255, BRIGHTNESS);
+      break;
+    case LAYER_OBS:
+      rgblight_mode_noeeprom(LAYER_EFFECT);
+      rgblight_sethsv_noeeprom(OBS_PURPLE, 255, BRIGHTNESS);
+      break;
+    default:
+      break;
+  }
+  layer_clear();
+  layer_on(layer);
+}
+
 uint16_t layer_keydown_timer;
 void process_layer_hold(uint16_t keycode, keyrecord_t *record, uint8_t layer) {
   if (record->event.pressed) {
     layer_keydown_timer = timer_read();
   } else {
     if (timer_elapsed(layer_keydown_timer) > hold_time) {
-      layer_clear();
-      layer_on(layer);
+      switch_to_layer(layer);
     } else {
       tap_code16(keycode);
     }
@@ -97,7 +122,7 @@ bool process_other_keys(uint16_t keycode, keyrecord_t *record) {
     case KC_TOOHIGH: {
       return send_emote(record, "TooHigh ");
     }
-      case KC_BOLOHMM: {
+    case KC_BOLOHMM: {
       return send_emote(record, "BoloHmm ");
     }
     case KC_PRIDEPOG: {
@@ -138,11 +163,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       return false;
     }
     case KC_8_OBSPAD: {
-      process_layer_hold(KC_KP_8, record, obs);
+      process_layer_hold(KC_KP_8, record, LAYER_OBS);
       return false;
     }
     case KC_9_EMOTEPAD: {
-      process_layer_hold(KC_KP_9, record, emote);
+      process_layer_hold(KC_KP_9, record, LAYER_EMOTE);
       return false;
     }
     case KC_DIV_RESET: {
@@ -152,11 +177,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     // emote top row
     case KC_HOLD_NUMPAD: {
-      process_layer_hold(KC_NO, record, numpad);
+      process_layer_hold(KC_NO, record, LAYER_NUMPAD);
       return false;
     }
     case KC_HOLD_OBSPAD: {
-      process_layer_hold(KC_NO, record, obs);
+      process_layer_hold(KC_NO, record, LAYER_OBS);
       return false;
     }
     // row 1 col 3 is nop on this layher
@@ -167,12 +192,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     // obs top row
     case KC_F9_NUMPAD: {
-      process_layer_hold(HYPR(KC_F9), record, numpad);
+      process_layer_hold(HYPR(KC_F9), record, LAYER_NUMPAD);
       return false;
     }
     // row 1 col 2 is normal key on this layer
     case KC_F11_EMOTEPAD: {
-      process_layer_hold(HYPR(KC_F11), record, emote);
+      process_layer_hold(HYPR(KC_F11), record, LAYER_EMOTE);
       return false;
     }
     case KC_F12_RESET: {
@@ -184,5 +209,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     default: {
       return process_other_keys(keycode, record);
     }
+  }
+}
+
+void matrix_scan_user(void) {
+  static bool first_time = true;
+  if (first_time) {
+    rgblight_mode_noeeprom(LAYER_EFFECT);
+    rgblight_sethsv_noeeprom(NUMPAD_BLUE, 255, BRIGHTNESS);
+    first_time = false;
   }
 }
