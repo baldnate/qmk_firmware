@@ -212,11 +212,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   }
 }
 
-void matrix_scan_user(void) {
-  static bool first_time = true;
-  if (first_time) {
-    rgblight_mode_noeeprom(LAYER_EFFECT);
-    rgblight_sethsv_noeeprom(NUMPAD_BLUE, 255, BRIGHTNESS);
-    first_time = false;
-  }
+void keyboard_post_init_user(void) {
+  rgblight_mode_noeeprom(LAYER_EFFECT);
+  rgblight_sethsv_noeeprom(NUMPAD_BLUE, 255, BRIGHTNESS);
 }
