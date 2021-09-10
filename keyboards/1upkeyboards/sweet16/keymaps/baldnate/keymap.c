@@ -13,7 +13,7 @@ enum layers {
 };
 
 enum custom_keycodes {
-  KC_DIV_RESET = SAFE_RANGE, KC_7_NUMPAD, KC_8_OBSPAD, KC_9_EMOTEPAD,
+  KC_DIV_RESET = SAFE_RANGE, KC_7_NUMLOCK, KC_8_OBSPAD, KC_9_EMOTEPAD,
   KC_F9_NUMPAD, KC_F10_OBSPAD, KC_F11_EMOTEPAD, KC_F12_RESET,
   KC_HOLD_NUMPAD, KC_HOLD_OBSPAD, KC_HOLD_RESET,
   KC_CONCERN, KC_TREVINO, KC_TOOHIGH, KC_BOLOHMM,
@@ -21,9 +21,15 @@ enum custom_keycodes {
   KC_GOODLUCK, KC_HAHASWEAT, KC_CCTV, KC_DBSTYLE
 };
 
+enum {
+  TD_7_NUMPAD = 0,  TD_8_OBSPAD,    TD_9_EMOTEPAD,    TD_DIV_RESET,
+  TD_F9_NUMPAD,     TD_F10_OBSPAD,  TD_F11_EMOTEPAD,  TD_F12_RESET,
+  TD_NOP_NUMPAD,    TD_NOP_OBSPAD,  /* NOP, */        TD_NOP_RESET
+};
+
 const uint16_t PROGMEM keymaps[][4][4] = {
   [LAYER_NUMPAD] = LAYOUT_ortho_4x4(
-    KC_7_NUMPAD,    KC_8_OBSPAD,    KC_9_EMOTEPAD,    KC_DIV_RESET,
+    KC_7_NUMLOCK,   `KC_8_OBSPAD,    KC_9_EMOTEPAD,    KC_DIV_RESET,
     KC_KP_4,        KC_KP_5,        KC_KP_6,          KC_KP_ASTERISK,
     KC_KP_1,        KC_KP_2,        KC_KP_3,          KC_KP_MINUS,
     KC_KP_0,        KC_KP_DOT,      KC_KP_ENTER,      KC_KP_PLUS
@@ -40,6 +46,35 @@ const uint16_t PROGMEM keymaps[][4][4] = {
     HYPR(KC_F17),   HYPR(KC_F18),   HYPR(KC_F19),     HYPR(KC_F20),
     HYPR(KC_F21),   HYPR(KC_F22),   HYPR(KC_F23),     HYPR(KC_F24)
   ),
+};
+
+void td_kc_reset(qk_tap_dance_state_t *state, uint16_t keycode) {
+  if (state->count == 1) {
+    tap_code16(keycode);
+  } else if (state->count == 2) {
+    reset_keyboard();
+  }
+  reset_tap_dance(state);
+}
+
+void td_div_reset(qk_tap_dance_state_t *state, void *user_data) { td_kc_reset(state, KC_KP_SLASH); }
+void td_f12_reset(qk_tap_dance_state_t *state, void *user_data) { td_kc_reset(state, HYPR(KC_F12)); }
+
+
+qk_tap_dance_action_t tap_dance_actions[] = {
+  [TD_7_NUMPAD]     = ACTION_TAP_DANCE_DOUBLE(KC_KP_7, KC_NUMLOCK),
+  [TD_8_OBSPAD]     = ACTION_TAP_DANCE_LAYER_MOVE(KC_KP_8, LAYER_OBS),
+  [TD_9_EMOTEPAD]   = ACTION_TAP_DANCE_LAYER_MOVE(KC_KP_7, LAYER_EMOTE),
+  [TD_DIV_RESET]    = ACTION_TAP_DANCE_FN(td_div_reset),
+
+  [TD_F9_NUMPAD]    = ACTION_TAP_DANCE_LAYER_MOVE(HYPR(KC_F9), LAYER_NUMPAD),
+  [TD_F10_OBSPAD]   = ACTION_TAP_DANCE_LAYER_MOVE(HYPR(KC_F10), LAYER_NUMPAD),
+  [TD_F11_EMOTEPAD] = ACTION_TAP_DANCE_LAYER_MOVE(HYPR(KC_F11), LAYER_NUMPAD),
+  [TD_F12_RESET]    = ACTION_TAP_DANCE_FN(td_f12_reset),
+
+  [TD_NOP_NUMPAD]   = ACTION_TAP_DANCE_LAYER_MOVE(KC_KP_7, LAYER_NUMPAD),
+  [TD_NOP_OBSPAD]   = ACTION_TAP_DANCE_LAYER_MOVE(KC_KP_7, LAYER_NUMPAD),
+  [TD_NOP_RESET]    = ACTION_TAP_DANCE_LAYER_MOVE(KC_KP_7, LAYER_NUMPAD),
 };
 
 const uint16_t hold_time = 500;
@@ -158,7 +193,7 @@ bool process_other_keys(uint16_t keycode, keyrecord_t *record) {
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     // numpad top row
-    case KC_7_NUMPAD: {
+    case KC_7_NUMLOCK: {
       process_numlock_hold(KC_KP_7, record);
       return false;
     }
