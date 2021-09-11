@@ -1,0 +1,10 @@
+#pragma once
+
+#undef RGBLED_NUM
+#define RGBLED_NUM 3
+#define RGB_DI_PIN D0
+#define RGBLIGHT_EFFECT_BREATHE_MAX 90
+#define RGBLIGHT_ANIMATIONS
+
+#undef TAPPING_TERM
+#define TAPPING_TERM 225
