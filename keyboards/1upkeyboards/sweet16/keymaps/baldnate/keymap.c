@@ -29,10 +29,10 @@ enum {
 
 const uint16_t PROGMEM keymaps[][4][4] = {
   [LAYER_NUMPAD] = LAYOUT_ortho_4x4(
-    KC_7_NUMLOCK,   `KC_8_OBSPAD,    KC_9_EMOTEPAD,    KC_DIV_RESET,
-    KC_KP_4,        KC_KP_5,        KC_KP_6,          KC_KP_ASTERISK,
-    KC_KP_1,        KC_KP_2,        KC_KP_3,          KC_KP_MINUS,
-    KC_KP_0,        KC_KP_DOT,      KC_KP_ENTER,      KC_KP_PLUS
+    KC_7_NUMLOCK,   KC_8_OBSPAD,    KC_9_EMOTEPAD,    KC_DIV_RESET,
+    KC_NO,          KC_NO,          KC_NO,            KC_NO,
+    KC_PGUP,        KC_HOME,        KC_UP,            KC_END,
+    KC_PGDOWN,      KC_LEFT,        KC_DOWN,          KC_RIGHT
   ),
   [LAYER_EMOTE] = LAYOUT_ortho_4x4(
     KC_HOLD_NUMPAD, KC_HOLD_OBSPAD, KC_NO,            KC_HOLD_RESET,
